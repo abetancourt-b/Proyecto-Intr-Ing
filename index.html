@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>Estación de Monitoreo – Chimenea (Mejorado)</title>
+
+<!-- Firebase v8 -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<style>
+  :root{
+    --bg: #f5f7f9;
+    --card: #ffffff;
+    --muted: #7a7a7a;
+    --accent: #1e90ff;
+    --online: #22c55e;
+    --offline: #ef4444;
+    --warning: #f59e0b;
+    --critical: #b91c1c;
+    --radius: 12px;
+    --shadow: 0 6px 18px rgba(0,0,0,0.06);
+  }
+
+  *{box-sizing: border-box}
+
+  body{
+    margin:0;
+    background:var(--bg);
+    font-family: Inter, Arial, Helvetica, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:12px 0 40px 0;
+  }
+
+  header{
+    width:100%;
+    max-width:980px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    margin-bottom:12px;
+  }
+
+  h1{
+    margin:8px 0;
+    font-size:28px;
+    color:#0f172a;
+    font-weight:700;
+    letter-spacing:-0.3px;
+    text-align:center;
+  }
+
+  .meta-row{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    font-size:15px;
+    font-weight:600;
+    color:#334155;
+  }
+
+  .status-dot{
+    width:12px;
+    height:12px;
+    border-radius:999px;
+    background:transparent;
+    box-shadow:none;
+    transition:all 200ms ease;
+    visibility:hidden;
+  }
+
+  .status-online{
+    background:var(--online);
+    visibility:visible; 
+    box-shadow:0 0 8px rgba(34,197,94,0.25);
+  }  
+
+  .status-offline{
+    background:var(--offline);
+    visibility:visible;
+    box-shadow:0 0 8px rgba(239,68,68,0.25);
+  }  
+
+  main{
+    width:100%;
+    max-width:980px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    margin-top:10px;
+    padding-bottom:40px;
+  }
+
+  .card{
+    width:100%;
+    max-width:420px;
+    background:var(--card);
+    border-radius:var(--radius);
+    padding:18px;
+    margin:10px 0;
+    box-shadow:var(--shadow);
+    border-left:4px solid var(--accent);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+
+  .card.compact{
+    padding:14px;
+  }
+
+  .card-title{
+    font-size:18px;
+    color:#0b1220;
+    font-weight:600;
+    margin-bottom:6px;
+  }
+
+  .value{
+    font-size:26px;
+    color:#071030;
+    font-weight:700; 
+  }
+
+  .small{
+    font-size:14px;
+    color:var(--muted);
+  }
+
+  .time{
+    font-size:13px;
+    color:#64748b;
+    margin-top:8px;
+  }
+
+  .risk-pill{
+    display:inline-block;
+    padding:6px 10px;
+    border-radius:999px;
+    font-weight:600;
+    font-size:13px;
+    color:white;
+    margin-left:8px;
+  }
+
+  .row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+  }
+
+  .updated{
+  animation: highlight .4s ease;
+  }
+
+  @keyframes highlight { from {background:rgba(30,144,255,0.07);} to {background:transparent;} }
+
+  /* Mini pantallas */
+  @media (max-width:480px){
+    body{padding:12px;}
+    .card{max-width:100%; width:100%;}
+    h1{font-size:20px;}
+    .value{font-size:22px;}
+  }
+  
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Estación de Monitoreo de Gases – Chimenea</h1>
+  <div class="meta-row">
+    <div id="statusDot" class="status-dot" aria-hidden="true"></div>
+    <div id="deviceStatus" style="color:var(--muted)">Comprobando…</div>
+    <div style="width:8px"></div>
+    <div>Última actualización (global): <span id="lastGlobal">—</span></div>
+  </div>
+</header>
+
+<main>
+  <section id="card-mq" class="card compact" aria-labelledby="mq-title">
+    <div class="card-title" id="mq-title">MQ135 — Gases contaminantes</div>
+    <div class="row" style="justify-content:flex-start; gap:16px;">
+      <div class="value" id="mq-value">Cargando…</div>
+      
+    </div>
+    <div class="time">Última: <span id="mq-time">—</span> · <span id="mq-age" class="small">—</span></div>
+</section>
+
+  <section id="card-sds" class="card compact" aria-labelledby="sds-title">
+    <div class="card-title" id="sds-title">SDS011 — Material particulado</div>
+    <div class="row">
+      <div>
+        <div class="small">PM2.5</div>
+        <div class="value" id="pm25-value">Cargando…</div>
+      </div>
+      <div>
+        <div class="small">PM10</div>
+        <div class="value" id="pm10-value">Cargando…</div>
+      </div>
+    </div>
+    <div class="time">Última: <span id="pm-time">—</span> · <span id="pm-age" class="small">—</span></div>
+  </section>
+
+  <section id="card-bmp" class="card compact" aria-labelledby="bmp-title">
+    <div class="card-title" id="bmp-title">BMP280 — Temperatura y presión</div>
+    <div class="row">
+      <div>
+        <div class="small">Temperatura</div>
+        <div class="value" id="temp-value">Cargando…</div>
+      </div>
+      <div>
+        <div class="small">Presión</div>
+        <div class="value" id="pres-value">Cargando…</div>
+      </div>
+    </div>
+    <div class="time">Última: <span id="bmp-time">—</span> · <span id="bmp-age" class="small">—</span></div>
+  </section>
+</main>
+
+<script>
+
+/* Configuracion de FireBase */
+var firebaseConfig = {
+  apiKey: "AIzaSyAkZoxB2TfujfWVu_8AttZWKNKZqvSY8D4",
+  authDomain: "estacion-de-monitoreo-b2335.firebaseapp.com",
+  databaseURL: "https://estacion-de-monitoreo-b2335-default-rtdb.firebaseio.com",
+  projectId: "estacion-de-monitoreo-b2335",
+  storageBucket: "estacion-de-monitoreo-b2335.appspot.com",
+  messagingSenderId: "1024036137806",
+  appId: "1:1024036137806:web:xxxx"
+};
+firebase.initializeApp(firebaseConfig);
+var db = firebase.database();
+
+/* IMPORTANTE - ESP32 y sus funciones */
+const OFFLINE_TIMEOUT = 12000; // despues de 12 segundos cuenta como offline el ESP32
+let lastHeartbeat = 0;
+
+function setDeviceStatusOnline() {
+  const dot = document.getElementById('statusDot');
+  const label = document.getElementById('deviceStatus');
+  dot.classList.remove('status-offline');
+  dot.classList.add('status-online');
+  dot.style.visibility = 'visible';
+  label.textContent = 'Online';
+  label.style.color = 'var(--online)';
+}
+
+function setDeviceStatusOffline() {
+  const dot = document.getElementById('statusDot');
+  const label = document.getElementById('deviceStatus');
+  dot.classList.remove('status-online');
+  dot.classList.add('status-offline');
+  dot.style.visibility = 'visible';
+  label.textContent = 'Offline';
+  label.style.color = 'var(--offline)';
+}
+
+function setDeviceStatusChecking() {
+  const dot = document.getElementById('statusDot');
+  const label = document.getElementById('deviceStatus');
+  dot.style.visibility = 'hidden';
+  dot.classList.remove('status-online','status-offline');
+  label.textContent = 'Comprobando…';
+  label.style.color = '#64748b';
+}
+
+setDeviceStatusChecking();
+
+/* Esto revisa el estado de la ESP32 mostrado mas abajito */
+db.ref('estado/heartbeat').on('value', snap => {
+  const hb = snap.val();
+  if (!hb) return;
+  lastHeartbeat = parseInt(hb) || hb;
+  // actualiza label y el ultimo global
+  setDeviceStatusOnline();
+  updateLastGlobal(lastHeartbeat);
+});
+
+/* Ideal para poder revisar si sigue activo la ESP32 (unica manera que encontré dentro de lo que se) */
+setInterval(() => {
+  if (!lastHeartbeat) return;
+  const diff = Date.now() - lastHeartbeat;
+  if (diff > OFFLINE_TIMEOUT) setDeviceStatusOffline();
+}, 1000);
+
+/* fecha global y UI */
+function timeAgo(ts){
+  if(!ts) return '—';
+  const s = Math.floor((Date.now() - ts)/1000);
+  if(s < 5) return 'hace unos segundos';
+  if(s < 60) return `hace ${s}s`;
+  const m = Math.floor(s/60);
+  if(m < 60) return `hace ${m}m`;
+  const h = Math.floor(m/60);
+  return `hace ${h}h`;
+}
+
+function flash(el){ if(!el) return; el.classList.add('updated'); setTimeout(()=> el.classList.remove('updated'), 450); }
+
+function getElTs(id){ const el = document.getElementById(id); if(!el) return null; const ts = el.getAttribute('data-ts'); return ts ? parseInt(ts) : null; }
+
+function setValAndTs(idVal, value, idTime, timestamp){
+  const elVal = document.getElementById(idVal);
+  const elTime = document.getElementById(idTime);
+  if(elVal){ elVal.innerText = value; flash(elVal); }
+  if(elTime){ elTime.innerText = timestamp ? new Date(timestamp).toLocaleTimeString() : '—'; elTime.setAttribute('data-ts', timestamp ? timestamp.toString() : ''); }
+}
+
+function updateLastGlobal(ts){
+  if(!ts) return;
+  document.getElementById('lastGlobal').innerText = new Date(ts).toLocaleString();
+}
+
+function riskToStyle(risk){
+  if(!risk) return {label:'—', color:'#94a3b8'};
+  const r = (''+risk).toLowerCase();
+  if(r.includes('bajo') || r.includes('normal')) return {label:'Bajo', color: 'var(--online)'};
+  if(r.includes('medio') || r.includes('moderado')) return {label:'Medio', color: 'var(--warning)'};
+  if(r.includes('alto')) return {label:'Alto', color: 'var(--critical)'};
+  if(r.includes('crit')) return {label:'Crítico', color: '#7f1d1d'};
+  return {label: risk, color:'#94a3b8'};
+}
+
+/* Listeners de sensores, actualizan todo menos, la parte de offline y online */
+
+/* MQ135 */
+db.ref('sensores/MQ135').on('value', snap => {
+  const d = snap.val() || {};
+  const ts = d.timestamp ? parseInt(d.timestamp) : null;
+  setValAndTs('mq-value', `${d.valor ?? '—'} ${d.unidad ?? 'ppm'}`, 'mq-time', ts);
+  const pill = document.getElementById('mq-risk');
+  const s = riskToStyle(d.riesgo);
+  pill.innerText = s.label;
+  pill.style.background = s.color;
+  if(ts) updateLastGlobal(ts);
+});
+
+/* SDS011 */
+db.ref('sensores/SDS011').on('value', snap => {
+  const d = snap.val() || {};
+  const ts = d.timestamp ? parseInt(d.timestamp) : null;
+  setValAndTs('pm25-value', `${d.pm25 ?? '—'} µg/m³`, 'pm-time', ts);
+  setValAndTs('pm10-value', `${d.pm10 ?? '—'} µg/m³`, 'pm-time', ts);
+  if(ts) updateLastGlobal(ts);
+});
+
+/* BMP280 */
+db.ref('sensores/BMP280').on('value', snap => {
+  const d = snap.val() || {};
+  const ts = d.timestamp ? parseInt(d.timestamp) : null;
+  setValAndTs('temp-value', `${d.temperatura ?? '—'} °C`, 'bmp-time', ts);
+  setValAndTs('pres-value', `${d.presion_hPa ?? d.presion ?? '—'} hPa`, 'bmp-time', ts);
+  if(ts) updateLastGlobal(ts);
+});
+
+/* actualizar "age" (pequeños badges) y fallback de status */
+setInterval(() => {
+  document.getElementById('mq-age').innerText = timeAgo(getElTs('mq-time'));
+  document.getElementById('pm-age').innerText = timeAgo(getElTs('pm-time'));
+  document.getElementById('bmp-age').innerText = timeAgo(getElTs('bmp-time'));
+}, 1000);
+
+</script>
+
+</body>
+</html>
