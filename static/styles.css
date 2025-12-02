@@ -39,7 +39,7 @@ body {
     font-family: 'Inter', sans-serif;
     background-color: var(--bg-body);
     color: var(--text-primary);
-    height: 100vh; /* CRUCIAL: Altura completa de la ventana */
+    height: 100vh;
     display: flex;
     overflow: hidden;
 }
@@ -62,7 +62,6 @@ body {
     align-items: center;
     gap: 0.75rem;
     margin-bottom: 2.5rem;
-    /* CENTRADO DEL LOGO */
     justify-content: center; 
 }
 
@@ -106,7 +105,6 @@ body {
     display: flex;
     flex-direction: column;
     overflow-y: auto;
-    /* AJUSTE PARA ALTURA: Ocupa el 100% del espacio vertical restante */
     min-height: 100%; 
 }
 
@@ -168,34 +166,21 @@ header {
     color: var(--text-primary);
 }
 
+/* Importante, no mover vistas, a no ser que falle todo literal */
 .view-section {
-    display: none;
-    padding: 4rem;
+    display: none; 
+    padding: 4rem 2rem; 
     max-width: 1400px;
     margin: 0 auto;
     width: 100%;
     animation: fadeIn 0.3s ease;
+    min-height: 100%; 
+    flex-direction: column;
+    justify-content: flex-start; 
 }
 
 .view-section.active {
-    display: grid;
-}
-
-#view-history.active {
-    /* Ajuste para contener la tabla correctamente */
     display: flex; 
-    flex-direction: column;
-}
-
-#view-settings.active {
-    /* Aseguramos la dirección vertical para el caso de que existan más elementos además del settings-container */
-    display: flex; 
-    flex-direction: column;
-    /* min-height: 100%; <-- Eliminado */
-}
-
-#view-settings {
-    padding-top: 4rem !important; /* Ajusta aquí la separación */
 }
 
 @keyframes fadeIn {
@@ -210,10 +195,14 @@ header {
     }
 }
 
-#view-dashboard {
+/* Esto es importante para dashboard, porfavor no mover*/
+#view-dashboard.active {
+    display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 1.5rem;
+    align-content: flex-start; 
 }
+
 
 .card {
     background-color: var(--bg-card);
@@ -223,6 +212,7 @@ header {
     border: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
+    height: auto; 
 }
 
 .card-header {
@@ -326,6 +316,8 @@ header {
     border: 1px solid var(--border-color);
     overflow: hidden;
     width: 100%;
+    flex-shrink: 0; 
+    margin-bottom: 2rem;
 }
 
 table {
@@ -360,40 +352,72 @@ td {
     border-radius: 16px;
     box-shadow: var(--shadow-md);
     border: 1px solid var(--border-color);
-    /* ✨ SOLUCIÓN 1A: Aseguramos un buen padding interno (por ejemplo, 1.5rem arriba/abajo) */
-    padding: 1.5rem; 
+    padding: 2.5rem; 
     width: 100%;
-    /* ✨ SOLUCIÓN 1B: Eliminamos flex-grow para que la caja flote y no se pegue al fondo. */
-    /* flex-grow: 1; <-- Eliminado */
+    max-width: 600px; 
+    margin: 0 auto;
+    flex-shrink: 0; 
+    margin-bottom: 4rem; 
 }
 
-/* ELIMINAR MARGEN SUPERIOR DEL PRIMER TITULO EN AJUSTES */
+.settings-container h3 {
+    margin: 0 0 2rem 0; 
+    font-size: 1.25rem;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1.25rem;
+}
+
 .settings-container h3:first-child {
     margin-top: 0;
 }
 
+.settings-subtitle {
+    margin: 2.5rem 0 1rem 0; 
+    color: var(--text-secondary); 
+    font-size: 0.9rem; 
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em; 
+}
+
+.settings-subtitle:first-of-type { 
+    margin-top: 0.5rem; 
+}
+
+
 .form-group {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem; 
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.5rem; 
     font-weight: 500;
     color: var(--text-primary);
+    font-size: 0.95rem;
 }
 
 .form-group input {
     width: 100%;
-    padding: 0.75rem;
+    padding: 0.75rem 1rem; 
     border-radius: 8px;
     border: 1px solid var(--border-color);
     background: var(--bg-body);
     color: var(--text-primary);
     font-size: 1rem;
+    transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus { 
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    background: var(--bg-card); 
 }
 
 .btn-primary {
+    margin-top: 3rem; 
     background-color: var(--accent-primary);
     color: white;
     border: none;
@@ -402,9 +426,8 @@ td {
     font-weight: 600;
     cursor: pointer;
     transition: opacity 0.2s;
-    display: inline-flex; 
-    align-items: center; 
-    gap: 0.5rem;
+    display: block; 
+    width: 100%;
 }
 
 .btn-primary:hover {

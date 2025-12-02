@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estación de Monitoreo Pro</title>
+    <title>Estación de Monitoreo</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -75,7 +75,7 @@
             <div class="card" id="card-mq">
                 <div class="card-header">
                     <div class="card-info">
-                        <h3>Calidad del Aire</h3>
+                        <h3>Gases Contaminantes</h3>
                         <p>Sensor MQ135</p>
                     </div>
                     <div class="card-icon">
@@ -141,7 +141,7 @@
             <div class="card" id="card-pres">
                 <div class="card-header">
                     <div class="card-info">
-                        <h3>Presión Atmosférica</h3>
+                        <h3>Presión</h3>
                         <p>Sensor BMP280</p>
                     </div>
                     <div class="card-icon">
@@ -157,12 +157,12 @@
         </div>
 
         <div id="view-history" class="view-section">
-            
+
             <div class="table-container">
                 <table>
                     <thead>
                         <tr>
-                            <th>Índice</th> 
+                            <th>Índice</th>
                             <th>Hora</th>
                             <th>MQ135 (ppm)</th>
                             <th>PM2.5 (µg/m³)</th>
@@ -178,10 +178,9 @@
 
         <div id="view-settings" class="view-section">
             <div class="settings-container">
-                <h3 style="margin-bottom: 1.5rem;">Configuración de Umbrales</h3>
+                <h3>Configuración de Umbrales</h3>
 
-                <h4 style="margin: 1.5rem 0 1rem 0; color: var(--text-secondary); font-size: 0.9rem;">MQ135 - Calidad
-                    del Aire</h4>
+                <h4 class="settings-subtitle">MQ135 - Gases Contaminantes</h4>
                 <div class="form-group">
                     <label>Alerta Amarilla (PPM)</label>
                     <input type="number" id="set-mq-warn" value="800">
@@ -191,8 +190,7 @@
                     <input type="number" id="set-mq-danger" value="1200">
                 </div>
 
-                <h4 style="margin: 1.5rem 0 1rem 0; color: var(--text-secondary); font-size: 0.9rem;">PM2.5 - Partículas
-                    Respirables</h4>
+                <h4 class="settings-subtitle">PM2.5 - Partículas Respirables</h4>
                 <div class="form-group">
                     <label>Alerta Amarilla (µg/m³)</label>
                     <input type="number" id="set-pm-warn" value="12">
@@ -202,8 +200,7 @@
                     <input type="number" id="set-pm-danger" value="35">
                 </div>
 
-                <h4 style="margin: 1.5rem 0 1rem 0; color: var(--text-secondary); font-size: 0.9rem;">PM10 - Partículas
-                    Inhalables</h4>
+                <h4 class="settings-subtitle">PM10 - Partículas Inhalables</h4>
                 <div class="form-group">
                     <label>Alerta Amarilla (µg/m³)</label>
                     <input type="number" id="set-pm10-warn" value="54">
@@ -213,8 +210,7 @@
                     <input type="number" id="set-pm10-danger" value="154">
                 </div>
 
-                <h4 style="margin: 1.5rem 0 1rem 0; color: var(--text-secondary); font-size: 0.9rem;">Temperatura - Zona
-                    de Confort</h4>
+                <h4 class="settings-subtitle">Temperatura - Zona de Confort (o porque nombre cambiamos zona de Confort)</h4>
                 <div class="form-group">
                     <label>Temperatura Mínima (°C)</label>
                     <input type="number" id="set-temp-low" value="18">
@@ -224,8 +220,7 @@
                     <input type="number" id="set-temp-high" value="30">
                 </div>
 
-                <h4 style="margin: 1.5rem 0 1rem 0; color: var(--text-secondary); font-size: 0.9rem;">Presión
-                    Atmosférica - Rango Normal</h4>
+                <h4 class="settings-subtitle">Presión - Rango Normal</h4>
                 <div class="form-group">
                     <label>Presión Mínima (hPa)</label>
                     <input type="number" id="set-pres-low" value="1000">
@@ -242,4 +237,5 @@
 
     <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
+
 </html>

@@ -13,15 +13,15 @@ var auth = firebase.auth();
 
 // LÓGICA DE TEMA OSCURO PERSISTENTE
 // Se ejecuta inmediatamente al cargar para evitar parpadeos
-(function() {
+(function () {
     var savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
         document.body.setAttribute('data-theme', 'dark');
     }
 })();
 
-var lastSavedTimestamp = localStorage.getItem('lastSavedTimestamp') || 0; 
-var latestSensorData = {}; 
+var lastSavedTimestamp = localStorage.getItem('lastSavedTimestamp') || 0;
+var latestSensorData = {};
 
 var thresholds = {
     mq: { warning: 800, danger: 1200 },
@@ -67,14 +67,14 @@ auth.signInWithEmailAndPassword("esp32@test.com", "123456789")
     .then(function (userCredential) {
         console.log("Autenticado:", userCredential.user.email);
         updateConnectionStatus(true);
-        cargarHistorialDesdeFirebase(); 
+        cargarHistorialDesdeFirebase();
     })
     .catch(function (error) {
         console.error("Error Auth:", error);
         updateConnectionStatus(false);
     });
 
-db.ref('configuracion').on('value', function(snapshot) {
+db.ref('configuracion').on('value', function (snapshot) {
     var newThresholds = snapshot.val();
     if (newThresholds) {
         Object.assign(thresholds.mq, newThresholds.mq);
@@ -105,21 +105,24 @@ function cargarHistorialDesdeFirebase() {
         var historialGuardado = snapshot.val();
         var tbody = document.getElementById('history-body');
         tbody.innerHTML = '';
-        
+
+        // IMPORTANTE NO TOCAR
+        // Error horrible, puede que funcione, el ID, es la hora, por lo que si varias personas (navegadores) abren la misma pagina al mismo tiempo, todas, escribe en la misma casilla, entonces no se admite mas de 1 ID con la misma hora, ahora se sobreescribe, y solo es 1 ID, y no x IDs
+
         if (historialGuardado) {
-            var registros = Object.values(historialGuardado); 
+            var registros = Object.values(historialGuardado);
             var totalRegistros = registros.length;
             registros.forEach(function (registro, index) {
                 if (registro && registro.timeStr) {
                     var row = document.createElement('tr');
-                    var indiceLegible = totalRegistros - index; 
-                    row.innerHTML = '<td>#' + indiceLegible + '</td>' + 
-                                    '<td>' + registro.timeStr + '</td>' + 
-                                    '<td>' + registro.mq + '</td>' + 
-                                    '<td>' + registro.pm + '</td>' + 
-                                    '<td>' + registro.pm10 + '</td>' + 
-                                    '<td>' + registro.temp + '</td>' + 
-                                    '<td>' + registro.pres + '</td>';
+                    var indiceLegible = totalRegistros - index;
+                    row.innerHTML = '<td>#' + indiceLegible + '</td>' +
+                        '<td>' + registro.timeStr + '</td>' +
+                        '<td>' + registro.mq + '</td>' +
+                        '<td>' + registro.pm + '</td>' +
+                        '<td>' + registro.pm10 + '</td>' +
+                        '<td>' + registro.temp + '</td>' +
+                        '<td>' + registro.pres + '</td>';
                     tbody.prepend(row);
                 }
             });
@@ -170,7 +173,7 @@ function saveSettings() {
         temp: { low: tempLow, high: tempHigh },
         pres: { low: presLow, high: presHigh }
     };
-    
+
     db.ref('configuracion').set(newThresholds)
         .then(() => {
             alert('✅ Ajustes guardados y sincronizados correctamente.');
@@ -190,6 +193,7 @@ function updateCardStatus(key, value, unit) {
     var status = 'success';
     var label = 'Normal';
 
+    // Importante: Aqui van el mensajito que va debajo de cada uno en dashboard, decidir si toca cambiar algo ono
     if (key === 'temp') {
         if (value < thresholds.temp.low) {
             status = 'info';
@@ -199,7 +203,7 @@ function updateCardStatus(key, value, unit) {
             label = 'Calor';
         } else {
             status = 'success';
-            label = 'Confort';
+            label = 'Confort'; // Aca seria si cambiamos confort o algo
         }
     } else if (key === 'pres') {
         if (value < thresholds.pres.low || value > thresholds.pres.high) {
@@ -223,61 +227,56 @@ function updateCardStatus(key, value, unit) {
     }
 
     card.classList.add('status-' + status);
-    statusText.textContent = label;
-    valueEl.innerHTML = value + '<span class="metric-unit">' + unit + '</span>';
-}
-
-function guardarHistorialEnFirebase(timeStr, mq, pm, pm10, temp, pres, currentTimestamp) {
-    db.ref('historial_reciente').push({
-        timeStr: timeStr,
-        mq: mq,
-        pm: pm,
-        pm10: pm10,
-        temp: temp,
-        pres: pres
-    })
-    .then(() => {
-        localStorage.setItem('lastSavedTimestamp', currentTimestamp);
-    })
-    .catch(error => {
-        console.error("Error al guardar con .push():", error);
-    });
+    if (valueEl) valueEl.textContent = value;
+    if (statusText) statusText.textContent = label;
 }
 
 function addToHistoryTable(timeStr, mq, pm, pm10, temp, pres) {
     var tbody = document.getElementById('history-body');
+    if (!tbody) return;
     var row = document.createElement('tr');
     var newIndex = tbody.children.length + 1;
-    row.innerHTML = '<td>#' + newIndex + '</td>' + 
-                    '<td>' + timeStr + '</td>' + 
-                    '<td>' + mq + '</td>' + 
-                    '<td>' + pm + '</td>' + 
-                    '<td>' + pm10 + '</td>' + 
-                    '<td>' + temp + '</td>' + 
-                    '<td>' + pres + '</td>';
+    row.innerHTML = '<td>#' + newIndex + '</td>' +
+        '<td>' + timeStr + '</td>' +
+        '<td>' + mq + '</td>' +
+        '<td>' + pm + '</td>' +
+        '<td>' + pm10 + '</td>' +
+        '<td>' + temp + '</td>' +
+        '<td>' + pres + '</td>';
     tbody.insertBefore(row, tbody.firstChild);
     if (tbody.children.length > 500) {
         tbody.removeChild(tbody.lastChild);
     }
 }
 
+function guardarHistorialEnFirebase(timeStr, mq, pm, pm10, temp, pres, currentTimestamp) {
+    db.ref('historial_reciente').child(currentTimestamp).set({
+        timeStr: timeStr,
+        mq: mq,
+        pm: pm,
+        pm10: pm10,
+        temp: temp,
+        pres: pres
+    });
+}
+
 function toggleTheme() {
     var body = document.body;
     if (body.getAttribute('data-theme') === 'dark') {
         body.removeAttribute('data-theme');
-        localStorage.setItem('theme', 'light'); // Guardar preferencia
+        localStorage.setItem('theme', 'light');
     } else {
         body.setAttribute('data-theme', 'dark');
-        localStorage.setItem('theme', 'dark'); // Guardar preferencia
+        localStorage.setItem('theme', 'dark');
     }
 }
 
 db.ref('sensores').on('value', function (snap) {
     var d = snap.val() || {};
     latestSensorData = d;
-    
+
     var timeStr = "--:--:--";
-    var currentTimestamp = d.timestamp || 0; 
+    var currentTimestamp = d.timestamp || 0;
 
     if (currentTimestamp) {
         var date = new Date(currentTimestamp);
@@ -297,10 +296,10 @@ db.ref('sensores').on('value', function (snap) {
     var pres = d.Presion_hPa ? parseFloat(d.Presion_hPa).toFixed(1) : (d.Presion ? parseFloat(d.Presion).toFixed(1) : 0);
 
     updateAllCardStatuses(d);
-    
+
     if (currentTimestamp && String(currentTimestamp) !== String(lastSavedTimestamp)) {
-        lastSavedTimestamp = currentTimestamp; 
-        addToHistoryTable(timeStr.split(', ')[1], mq, pm, pm10, temp, pres); // Solo agregamos la hora a la tabla
+        lastSavedTimestamp = currentTimestamp;
+        addToHistoryTable(timeStr.split(', ')[1], mq, pm, pm10, temp, pres);
         guardarHistorialEnFirebase(timeStr, mq, pm, pm10, temp, pres, currentTimestamp);
     }
 });
