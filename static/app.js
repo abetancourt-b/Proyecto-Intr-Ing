@@ -11,8 +11,7 @@ firebase.initializeApp(firebaseConfig);
 var db = firebase.database();
 var auth = firebase.auth();
 
-// LÓGICA DE TEMA OSCURO PERSISTENTE
-// Se ejecuta inmediatamente al cargar para evitar parpadeos
+// tema oscuro, cambiar si a alguien no le gusta el tema oscuro
 (function () {
     var savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
