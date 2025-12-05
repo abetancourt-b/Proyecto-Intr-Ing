@@ -20,6 +20,10 @@ var auth = firebase.auth();
     }
 })();
 
+window.onload = function () {
+    switchView('dashboard');
+};
+
 var lastSavedTimestamp = localStorage.getItem('lastSavedTimestamp') || 0;
 var latestSensorData = {};
 
@@ -102,21 +106,16 @@ function updateConnectionStatus(isOnline) {
 
 function cargarHistorialDesdeFirebase() {
     db.ref('historial_reciente').orderByKey().limitToLast(500).once('value').then(function (snapshot) {
-        var historialGuardado = snapshot.val();
         var tbody = document.getElementById('history-body');
         tbody.innerHTML = '';
 
-        // IMPORTANTE NO TOCAR
-        // Error horrible, puede que funcione, el ID, es la hora, por lo que si varias personas (navegadores) abren la misma pagina al mismo tiempo, todas, escribe en la misma casilla, entonces no se admite mas de 1 ID con la misma hora, ahora se sobreescribe, y solo es 1 ID, y no x IDs
-
-        if (historialGuardado) {
-            var registros = Object.values(historialGuardado);
-            var totalRegistros = registros.length;
-            registros.forEach(function (registro, index) {
+        if (snapshot.exists()) {
+            var index = 1;
+            snapshot.forEach(function (childSnapshot) {
+                var registro = childSnapshot.val();
                 if (registro && registro.timeStr) {
                     var row = document.createElement('tr');
-                    var indiceLegible = totalRegistros - index;
-                    row.innerHTML = '<td>#' + indiceLegible + '</td>' +
+                    row.innerHTML = '<td>#' + index + '</td>' +
                         '<td>' + registro.timeStr + '</td>' +
                         '<td>' + registro.mq + '</td>' +
                         '<td>' + registro.pm + '</td>' +
@@ -124,6 +123,7 @@ function cargarHistorialDesdeFirebase() {
                         '<td>' + registro.temp + '</td>' +
                         '<td>' + registro.pres + '</td>';
                     tbody.prepend(row);
+                    index++;
                 }
             });
         }
@@ -141,7 +141,12 @@ function switchView(viewName) {
         el.classList.remove('active');
     });
     var navItems = document.querySelectorAll('.nav-item');
-    if (viewName === 'dashboard') navItems[0].classList.add('active');
+    if (viewName === 'dashboard') {
+        navItems[0].classList.add('active');
+        document.querySelector('.main-content').classList.add('no-scroll');
+    } else {
+        document.querySelector('.main-content').classList.remove('no-scroll');
+    }
     if (viewName === 'history') navItems[1].classList.add('active');
     if (viewName === 'settings') navItems[2].classList.add('active');
     var titles = { dashboard: 'Dashboard', history: 'Historial de Datos', settings: 'Ajustes' };
@@ -227,15 +232,22 @@ function updateCardStatus(key, value, unit) {
     }
 
     card.classList.add('status-' + status);
-    if (valueEl) valueEl.textContent = value;
+    if (valueEl) valueEl.textContent = value + ' ' + unit;
     if (statusText) statusText.textContent = label;
 }
 
 function addToHistoryTable(timeStr, mq, pm, pm10, temp, pres) {
     var tbody = document.getElementById('history-body');
     if (!tbody) return;
+
+    var lastIndex = 0;
+    if (tbody.rows.length > 0) {
+        var firstCell = tbody.rows[0].cells[0].textContent;
+        lastIndex = parseInt(firstCell.replace('#', '')) || 0;
+    }
+    var newIndex = lastIndex + 1;
+
     var row = document.createElement('tr');
-    var newIndex = tbody.children.length + 1;
     row.innerHTML = '<td>#' + newIndex + '</td>' +
         '<td>' + timeStr + '</td>' +
         '<td>' + mq + '</td>' +

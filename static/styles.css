@@ -62,7 +62,7 @@ body {
     align-items: center;
     gap: 0.75rem;
     margin-bottom: 2.5rem;
-    justify-content: center; 
+    justify-content: center;
 }
 
 .brand-icon {
@@ -105,7 +105,11 @@ body {
     display: flex;
     flex-direction: column;
     overflow-y: auto;
-    min-height: 100%; 
+    min-height: 100%;
+}
+
+.main-content.no-scroll {
+    overflow-y: hidden !important;
 }
 
 header {
@@ -143,7 +147,7 @@ header {
     font-size: 0.875rem;
     font-weight: 500;
     margin-top: -3px;
-    display: inline-flex; 
+    display: inline-flex;
     vertical-align: middle;
 }
 
@@ -168,19 +172,19 @@ header {
 
 /* Importante, no mover vistas, a no ser que falle todo literal */
 .view-section {
-    display: none; 
-    padding: 4rem 2rem; 
+    display: none;
+    padding: 4rem 2rem;
     max-width: 1400px;
     margin: 0 auto;
     width: 100%;
     animation: fadeIn 0.3s ease;
-    min-height: 100%; 
+    min-height: 100%;
     flex-direction: column;
-    justify-content: flex-start; 
+    justify-content: flex-start;
 }
 
 .view-section.active {
-    display: flex; 
+    display: flex;
 }
 
 @keyframes fadeIn {
@@ -200,7 +204,7 @@ header {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 1.5rem;
-    align-content: flex-start; 
+    align-content: flex-start;
 }
 
 
@@ -212,7 +216,7 @@ header {
     border: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
-    height: auto; 
+    height: auto;
 }
 
 .card-header {
@@ -316,7 +320,7 @@ header {
     border: 1px solid var(--border-color);
     overflow: hidden;
     width: 100%;
-    flex-shrink: 0; 
+    flex-shrink: 0;
     margin-bottom: 2rem;
 }
 
@@ -328,10 +332,10 @@ table {
 
 th,
 td {
-    padding: 1.25rem 1.5rem; 
+    padding: 1.25rem 1.5rem;
     border-bottom: 1px solid var(--border-color);
-    text-align: left; 
-    vertical-align: middle; 
+    text-align: left;
+    vertical-align: middle;
 }
 
 th {
@@ -352,16 +356,16 @@ td {
     border-radius: 16px;
     box-shadow: var(--shadow-md);
     border: 1px solid var(--border-color);
-    padding: 2.5rem; 
+    padding: 2.5rem;
     width: 100%;
-    max-width: 600px; 
+    max-width: 600px;
     margin: 0 auto;
-    flex-shrink: 0; 
-    margin-bottom: 4rem; 
+    flex-shrink: 0;
+    margin-bottom: 4rem;
 }
 
 .settings-container h3 {
-    margin: 0 0 2rem 0; 
+    margin: 0 0 2rem 0;
     font-size: 1.25rem;
     font-weight: 600;
     border-bottom: 1px solid var(--border-color);
@@ -373,26 +377,26 @@ td {
 }
 
 .settings-subtitle {
-    margin: 2.5rem 0 1rem 0; 
-    color: var(--text-secondary); 
-    font-size: 0.9rem; 
+    margin: 2.5rem 0 1rem 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.05em; 
+    letter-spacing: 0.05em;
 }
 
-.settings-subtitle:first-of-type { 
-    margin-top: 0.5rem; 
+.settings-subtitle:first-of-type {
+    margin-top: 0.5rem;
 }
 
 
 .form-group {
-    margin-bottom: 1.25rem; 
+    margin-bottom: 1.25rem;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 0.5rem; 
+    margin-bottom: 0.5rem;
     font-weight: 500;
     color: var(--text-primary);
     font-size: 0.95rem;
@@ -400,7 +404,7 @@ td {
 
 .form-group input {
     width: 100%;
-    padding: 0.75rem 1rem; 
+    padding: 0.75rem 1rem;
     border-radius: 8px;
     border: 1px solid var(--border-color);
     background: var(--bg-body);
@@ -409,15 +413,15 @@ td {
     transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
 }
 
-.form-group input:focus { 
+.form-group input:focus {
     outline: none;
     border-color: var(--accent-primary);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    background: var(--bg-card); 
+    background: var(--bg-card);
 }
 
 .btn-primary {
-    margin-top: 3rem; 
+    margin-top: 3rem;
     background-color: var(--accent-primary);
     color: white;
     border: none;
@@ -426,7 +430,7 @@ td {
     font-weight: 600;
     cursor: pointer;
     transition: opacity 0.2s;
-    display: block; 
+    display: block;
     width: 100%;
 }
 
@@ -453,9 +457,9 @@ td {
 
     td .status-badge {
         display: inline-flex !important;
-        vertical-align: middle !important; 
+        vertical-align: middle !important;
         position: relative !important;
-        top: -5px !important; 
-        margin-top: -5px !important; 
+        top: -5px !important;
+        margin-top: -5px !important;
     }
 }
